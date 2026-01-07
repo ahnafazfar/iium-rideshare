@@ -2,9 +2,21 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RideController;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/rides', [RideController::class, 'index'])->name('rides.index');
+
+    Route::middleware('verified.user')->group(function () {
+        Route::get('/rides/create', [RideController::class, 'create']);
+        Route::post('/rides', [RideController::class, 'store']);
+        Route::delete('/rides/{ride}', [RideController::class, 'destroy']);
+    });
 });
 
 Route::get('/dashboard', function () {
