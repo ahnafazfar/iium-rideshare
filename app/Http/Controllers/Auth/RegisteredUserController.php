@@ -32,13 +32,32 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'matric_no' => ['required', 'string', 'max:20', 'unique:'.User::class],
+            'matric_card' => ['required', 'image', 'max:2048'],
+
+            // At least one is required
+            'whatsapp' => ['nullable', 'required_without:telegram', 'string', 'max:20'],
+            'telegram' => ['nullable', 'required_without:whatsapp', 'string', 'max:50'],
+
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        $path = $request->file('matric_card')->store('matric_cards', 'public');
+
+        // Clean inputs before saving (optional but good practice)
+        $whatsapp = $request->whatsapp ? preg_replace('/[^0-9]/', '', $request->whatsapp) : null;
+        $telegram = $request->telegram ? ltrim($request->telegram, '@') : null;
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'matric_no' => $request->matric_no,
+            'whatsapp' => $whatsapp,
+            'telegram' => $telegram,
+            'matric_card_path' => $path,
             'password' => Hash::make($request->password),
+            'role' => 'passenger',
+            'verified' => false,
         ]);
 
         event(new Registered($user));

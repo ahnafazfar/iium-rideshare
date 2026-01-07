@@ -17,4 +17,12 @@ class VerifiedUser
         return $next($request);
     }
 
+    public function create()
+    {
+        if (!auth()->user()->verified) {
+            return redirect()->route('rides.index')->with('error', 'You must be verified to post a ride.');
+        }
+        return view('rides.create');
+    }
+
 }

@@ -22,6 +22,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'matric_no',
+        'matric_card_path',
+        'whatsapp', // Add this
+        'telegram', // Add this
+        'role',
+        'verified',
     ];
 
     /**

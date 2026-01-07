@@ -9,12 +9,20 @@ class RideController extends Controller
 {
     public function index()
     {
-        $rides = Ride::latest()->get();
-        return view('rides.index', compact('rides'));
+        // Load rides with user info for performance
+        $rides = Ride::latest()->with('user')->get();
+
+        // Return the dashboard view instead of rides.index
+        return view('dashboard', compact('rides'));
     }
 
     public function create()
     {
+        // Optional: Block unverified users from accessing the form
+        if (!auth()->user()->verified) {
+            return redirect()->route('dashboard')->with('error', 'You must be verified to post a ride.');
+        }
+
         return view('rides.create');
     }
 
@@ -33,15 +41,20 @@ class RideController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('rides.index');
+        // FIX: Redirect to 'dashboard' instead of 'rides.index'
+        return redirect()->route('dashboard')->with('success', 'Ride order created successfully!');
     }
 
     public function destroy(Ride $ride)
     {
-        if ($ride->user_id !== auth()->id()) {
+        // Allow Admins or the Owner to delete
+        if (auth()->id() !== $ride->user_id && auth()->user()->role !== 'admin') {
             abort(403);
         }
+
         $ride->delete();
-        return back();
+
+        // FIX: Redirect to 'dashboard'
+        return redirect()->route('dashboard')->with('success', 'Ride deleted successfully.');
     }
 }
