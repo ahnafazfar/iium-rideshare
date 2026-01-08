@@ -10,13 +10,17 @@ class AdminController extends Controller
     // List all unverified students
     public function index()
     {
-        // Get users who are NOT admins and NOT verified yet
-        $users = User::where('role', '!=', 'admin')
+        // 1. Pending Users (For verification tab)
+        $pending_users = User::where('role', '!=', 'admin')
             ->where('verified', false)
             ->get();
 
-        // CHANGE THIS LINE: from 'admin.dashboard' to 'admin.index'
-        return view('admin.index', compact('users'));
+        // 2. All Users (For the new "All Users" tab)
+        $all_users = User::where('role', '!=', 'admin')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.index', compact('pending_users', 'all_users'));
     }
 
     // Approve a student
